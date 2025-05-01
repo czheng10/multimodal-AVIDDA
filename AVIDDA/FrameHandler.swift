@@ -61,7 +61,7 @@ class FrameHandler: NSObject, ObservableObject {
         guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {return}
         
         if captureSession.canSetSessionPreset(.hd1280x720) {
-                captureSession.sessionPreset = .hd1280x720 // Wider aspect ratio
+                captureSession.sessionPreset = .hd1280x720
             } else {
                 captureSession.sessionPreset = .photo // Fallback
             }
@@ -137,7 +137,7 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
             if self.lastFrameTime == .zero || timestamp - self.lastFrameTime >= self.targetFrameInterval {
                 self.collectedFrames.append(cgImage)
                 self.lastFrameTime = timestamp
-                print(collectedFrames.count, "HOW MANY FRAMES SO FAR")
+                print(collectedFrames.count, " FRAMES SO FAR")
                 // Check if we've collected enough frames
                 if self.collectedFrames.count >= self.framesPerVideo {
                     self.processCollectedFrames()

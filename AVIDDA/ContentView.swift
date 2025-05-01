@@ -9,9 +9,16 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var model = FrameHandler()
+    
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            VStack {
+        VStack {
+            Text("AVIDDA")
+                .fontWeight(.bold)
+                .font(.system(size: 20))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 20)
+            
+            HStack {
                 if model.isRecording {
                     HStack(spacing: 6) {
                         Circle()
@@ -25,37 +32,42 @@ struct ContentView: View {
                     .padding(8)
                     .background(Color.gray.opacity(0.4))
                     .cornerRadius(20)
-                    .padding(.top, 8)
-                    .padding(.leading, 8)
+                } else {
+                    HStack(spacing: 6) {
+                        Circle()
+                            .fill(Color.clear)
+                            .frame(width: 12, height: 12)
+                        
+                        Text("REC")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.clear)
+                    }
+                    .padding(8)
+                    .background(Color.clear)
+                    .cornerRadius(20)
                 }
-                
-                // Camera feed
-                FrameView(image: model.frame)
-                    .frame(maxWidth: .infinity, maxHeight: 600)
-                    .background(Color.gray)
-                    .cornerRadius(8)
-                    .padding()
-                
-            }.padding(.top, 20)
-            
-            
-            
-            VStack {
                 Spacer()
-                
-                Button(action: {
-                    model.toggleRecording()
-                }) {
-                    Text(model.isRecording ? "Stop Recording" : "Start Recording")
-                        .padding()
-                        .background(model.isRecording ? Color.red : Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .opacity(1)
-                }.frame(maxWidth: .infinity)
-                
             }
-            .padding()
+            .padding(.leading, 32)
+            
+            FrameView(image: model.frame)
+                .frame(maxWidth: .infinity, maxHeight: 550)
+                .aspectRatio(contentMode: .fit)
+                .background(Color.gray)
+                .cornerRadius(20)
+                .padding(20)
+            
+            Button(action: {
+                model.toggleRecording()
+            }) {
+                Text(model.isRecording ? "Stop Recording" : "Start Recording")
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(model.isRecording ? Color.red : Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+            .padding(.horizontal, 20)
         }
     }
 }
