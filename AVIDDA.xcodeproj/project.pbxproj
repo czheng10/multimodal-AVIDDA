@@ -29,9 +29,22 @@
 		29EEA9582DC056A900448CB8 /* AVIDDAUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AVIDDAUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		2987E1242DC304BF00B29CF3 /* Exceptions for "AVIDDA" folder in "AVIDDA" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 29EEA9402DC056A800448CB8 /* AVIDDA */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		29EEA9432DC056A800448CB8 /* AVIDDA */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2987E1242DC304BF00B29CF3 /* Exceptions for "AVIDDA" folder in "AVIDDA" target */,
+			);
 			path = AVIDDA;
 			sourceTree = "<group>";
 		};
@@ -400,6 +413,7 @@
 				DEVELOPMENT_TEAM = MTZTN863MN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AVIDDA/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to capture videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -430,6 +444,7 @@
 				DEVELOPMENT_TEAM = MTZTN863MN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AVIDDA/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses camera to capture videos.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

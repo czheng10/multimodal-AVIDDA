@@ -9,11 +9,23 @@ import AVFoundation
 import CoreImage
 
 class FrameHandler: NSObject, ObservableObject {
+    // video recording
     @Published var frame:CGImage?
+    @Published var isRecording = false
     private var permissionGranted = false
     private let captureSession = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "sessionQueue")
     private let context = CIContext()
+    
+    // frame processing
+    private var collectedFrames: [CGImage] = []
+    private var lastFrameTime: CMTime = .zero
+    private let targetFrameInterval = CMTime(value: 1, timescale: 24) // 24 fps
+    private let framesPerVideo = 240
+    private var isProcessing = false
+    
+    // prediction
+    private var isDrowsy = false
     
     override init() {
         super.init()
@@ -63,6 +75,49 @@ class FrameHandler: NSObject, ObservableObject {
         videoOutput.connection(with: .video)?.videoOrientation = .portrait
         videoOutput.connection(with: .video)?.isVideoMirrored = true
     }
+    
+    func toggleRecording() {
+        isRecording.toggle()
+        if isRecording {
+            startRecording()
+        } else {
+            stopRecording()
+        }
+    }
+    
+    private func startRecording() {
+        guard !isRecording else { return }
+        isRecording = true
+        collectedFrames.removeAll()
+        lastFrameTime = .zero
+    }
+        
+    private func stopRecording() {
+        isRecording = false
+        collectedFrames.removeAll()
+    }
+    
+    private func processCollectedFrames() {
+        guard !collectedFrames.isEmpty else { return }
+        isProcessing = true
+        let framesToProcess = collectedFrames
+        collectedFrames.removeAll()
+        
+        // Call your prediction method
+        extractAndPredict(with: framesToProcess) { [weak self] in
+            self?.isProcessing = false
+        }
+    }
+    
+    private func extractAndPredict(with frames: [CGImage], completion: @escaping () -> Void) {
+        // Given frame collection, extract features from each and predict
+        print("Making prediction with \(frames.count) frames")
+        
+        DispatchQueue.main.async {
+            completion()
+        }
+    }
+    
 }
 
 extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -72,6 +127,22 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         
         DispatchQueue.main.async{ [unowned self] in
             self.frame = cgImage
+            
+            // Only collect frames if we're recording and not currently processing
+            guard self.isRecording, !self.isProcessing else { return }
+            
+            let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+            
+            // Collect frames at target frame rate
+            if self.lastFrameTime == .zero || timestamp - self.lastFrameTime >= self.targetFrameInterval {
+                self.collectedFrames.append(cgImage)
+                self.lastFrameTime = timestamp
+                print(collectedFrames.count, "HOW MANY FRAMES SO FAR")
+                // Check if we've collected enough frames
+                if self.collectedFrames.count >= self.framesPerVideo {
+                    self.processCollectedFrames()
+                }
+            }
         }
     }
     
