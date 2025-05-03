@@ -73,24 +73,13 @@ struct ContentView: View {
                             .background(Color.gray.opacity(0.4))
                             .cornerRadius(20)
                         } else {
-                            VStack{
-                                Text("Please turn up your audio for proper alerts.")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white)
-                                    .opacity(blink)
-                                    .onAppear {
-                                        withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
-                                            blink = 1.0
-                                        }
-                                    }
-                                Text("Click Start Recording to begin detection")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white)
-                                    .opacity(blink)
-                                    .onAppear {
-                                        withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
-                                            blink = 1.0
-                                        }
+                            Text("Click Start Recording to begin detection")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                                .opacity(blink)
+                                .onAppear {
+                                    withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
+                                        blink = 1.0
                                     }
                                 }
                         }
