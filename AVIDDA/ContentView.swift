@@ -7,6 +7,8 @@
 
 import SwiftUI
 import WebKit
+import AVFoundation
+import AudioToolbox
 
 struct GIFView: UIViewRepresentable {
     let gifName: String
@@ -47,86 +49,104 @@ struct ContentView: View {
     @State private var blink = 0.6
     
     var body: some View {
-        VStack {
-            Text("AVIDDA")
-                .fontWeight(.bold)
-                .font(.system(size: 20))
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 20)
-            
-            HStack {
-                // Fixed-height container for both states
-                Group {
-                    if model.isRecording {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(Color.red)
-                                .frame(width: 12, height: 12)
-                            
-                            Text("REC")
-                                .font(.system(size: 14, weight: .medium))
-                        }
-                        .padding(8)
-                        .background(Color.gray.opacity(0.4))
-                        .cornerRadius(20)
-                    } else {
-                        Text("Click Start Recording to begin detection")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white)
-                            .opacity(blink)
-                            .onAppear {
-                                withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
-                                    blink = 1.0
+        ZStack {
+            VStack {
+                Text("AVIDDA")
+                    .fontWeight(.bold)
+                    .font(.system(size: 20))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 20)
+                
+                HStack {
+                    
+                    Group {
+                        if model.isRecording {
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 12, height: 12)
+                                
+                                Text("REC")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .padding(8)
+                            .background(Color.gray.opacity(0.4))
+                            .cornerRadius(20)
+                        } else {
+                            VStack{
+                                Text("Please turn up your audio for proper alerts.")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .opacity(blink)
+                                    .onAppear {
+                                        withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
+                                            blink = 1.0
+                                        }
+                                    }
+                                Text("Click Start Recording to begin detection")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white)
+                                    .opacity(blink)
+                                    .onAppear {
+                                        withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
+                                            blink = 1.0
+                                        }
+                                    }
                                 }
+                        }
+                    }
+                    .frame(height: 32)
+                    .padding(.leading, 8)
+                    Spacer()
+                }
+                .padding(.leading, 32)
+                .padding(.top, 5)
+                
+                ZStack {
+                    if let _ = UIImage(named: "map.gif") {
+                        GIFView(gifName: "map")
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 300, height: 570)
+                            .background(Color.clear)
+                            .cornerRadius(20)
+                            .padding(.trailing, 50)
+                        
+                    } else {
+                        Color.clear
+                            .frame(width: 300, height: 600)
+                            .cornerRadius(20)
+                            .onAppear {
+                                showGIFError = true
                             }
                     }
+                    
+                    FrameView(image: model.frame)
+                        .frame(maxHeight: 400)
+                        .aspectRatio(contentMode: .fit)
+                        .cornerRadius(15)
+                        .padding(.trailing, 30)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .padding(.top, 180)
+                    
+                    AlertView(isPresented: $model.showAlert) {
+                        model.dismissAlert()
+                    }
+
                 }
-                .frame(height: 32) // Match REC indicator's total height
-                .padding(.leading, 8)
-                Spacer()
+                
+                Button(action: {
+                    model.toggleRecording()
+                }) {
+                    Text(model.isRecording ? "Stop Recording" : "Start Recording")
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(model.isRecording ? Color.red : Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
-            .padding(.leading, 32)
-            .padding(.top, 5)
-            
-            ZStack {
-               if let _ = UIImage(named: "map.gif") {
-                   GIFView(gifName: "map")
-                      .aspectRatio(contentMode: .fill)
-                      .frame(width: 300, height: 570)
-                      .background(Color.clear)
-                      .cornerRadius(20)
-                      .padding(.trailing, 50)
-                       
-               } else {
-                   Color.clear
-                       .frame(width: 300, height: 600)
-                       .cornerRadius(20)
-                       .onAppear {
-                           showGIFError = true
-                       }
-               }
-               
-               FrameView(image: model.frame)
-                    .frame(maxHeight: 400)
-                    .aspectRatio(contentMode: .fit)
-                    .cornerRadius(15)
-                    .padding(.trailing, 30)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 180)
-           }
-            
-            Button(action: {
-                model.toggleRecording()
-            }) {
-                Text(model.isRecording ? "Stop Recording" : "Start Recording")
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(model.isRecording ? Color.red : Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
         }
     }
 }

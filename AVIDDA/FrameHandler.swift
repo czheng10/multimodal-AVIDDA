@@ -7,6 +7,7 @@
 
 import AVFoundation
 import CoreImage
+import AudioToolbox
 
 class FrameHandler: NSObject, ObservableObject {
     // video recording
@@ -27,6 +28,15 @@ class FrameHandler: NSObject, ObservableObject {
     // prediction
     private var isDrowsy = false
     
+    // alarm
+    @Published var showAlert = false
+    @Published var isAlertActive = false
+    private var criticalSoundID: SystemSoundID = 1312
+    private var alarmPlayer: AVAudioPlayer?
+    private var alarmTimer: Timer?
+    private var volumeIncreaseTimer: Timer?
+    private var currentVolume: Float = 0.1
+
     override init() {
         super.init()
         checkPermission()
@@ -63,7 +73,7 @@ class FrameHandler: NSObject, ObservableObject {
         if captureSession.canSetSessionPreset(.hd1280x720) {
                 captureSession.sessionPreset = .hd1280x720
             } else {
-                captureSession.sessionPreset = .photo // Fallback
+                captureSession.sessionPreset = .photo
             }
         
         guard let videoDeviceInput = try? AVCaptureDeviceInput(device: videoDevice) else {return}
@@ -103,7 +113,6 @@ class FrameHandler: NSObject, ObservableObject {
         let framesToProcess = collectedFrames
         collectedFrames.removeAll()
         
-        // Call your prediction method
         extractAndPredict(with: framesToProcess) { [weak self] in
             self?.isProcessing = false
         }
@@ -116,8 +125,76 @@ class FrameHandler: NSObject, ObservableObject {
         DispatchQueue.main.async {
             completion()
         }
+
+        // PRED LOGIC HERE
+        isDrowsy = true 
+        if isDrowsy {
+            triggerDrowsinessAlert()
+        }
     }
     
+    func triggerDrowsinessAlert() {
+        guard isDrowsy else { return }
+        isAlertActive = true
+        
+        // popup
+        DispatchQueue.main.async {
+            self.showAlert = true
+        }
+ 
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Audio session error: \(error)")
+        }
+        
+        // Bypass silent mode than play alarm
+        AudioServicesPlaySystemSoundWithCompletion(criticalSoundID) {
+            //2 second gap
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.setupAndPlayAlarm()
+            }
+        }
+    }
+    
+    private func setupAndPlayAlarm() {
+        guard let alarmURL = Bundle.main.url(forResource: "alarm", withExtension: "caf") else {
+            print("Alarm sound file not found")
+            return
+        }
+        
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback)
+            try AVAudioSession.sharedInstance().setActive(true)
+            
+            alarmPlayer = try AVAudioPlayer(contentsOf: alarmURL)
+            alarmPlayer?.numberOfLoops = -1
+            alarmPlayer?.volume = currentVolume
+            alarmPlayer?.play()
+            
+            volumeIncreaseTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+                guard let self = self else { return }
+                self.currentVolume = min(self.currentVolume + 0.1, 1.0)
+                self.alarmPlayer?.volume = self.currentVolume
+                
+                if self.currentVolume >= 1.0 {
+                    self.volumeIncreaseTimer?.invalidate()
+                }
+            }
+        } catch {
+            print("Failed to play alarm: \(error.localizedDescription)")
+        }
+    }
+    
+    func dismissAlert() {
+        showAlert = false
+        isAlertActive = false
+        alarmPlayer?.stop()
+        volumeIncreaseTimer?.invalidate()
+        currentVolume = 0.1
+    }
+        
 }
 
 extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -128,17 +205,17 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         DispatchQueue.main.async{ [unowned self] in
             self.frame = cgImage
             
-            // Only collect frames if we're recording and not currently processing
-            guard self.isRecording, !self.isProcessing else { return }
+            // Only collect frames if not currently processing or alerting
+            guard self.isRecording, !self.isProcessing, !self.isAlertActive else { return }
             
             let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
             
-            // Collect frames at target frame rate
+            // Collect frames at 24 fps
             if self.lastFrameTime == .zero || timestamp - self.lastFrameTime >= self.targetFrameInterval {
                 self.collectedFrames.append(cgImage)
                 self.lastFrameTime = timestamp
                 print(collectedFrames.count, " FRAMES SO FAR")
-                // Check if we've collected enough frames
+
                 if self.collectedFrames.count >= self.framesPerVideo {
                     self.processCollectedFrames()
                 }
