@@ -3,6 +3,9 @@
 !AVIDDA/head_model.json
 !AVIDDA/pose_model.json
 
+# Ignore config file
+AVIDDA.xcodeproj/project.pbxproj
+
 # Ignore the large MediaPipe binaries
 Pods/MediaPipeTasksCommon/frameworks/graph_libraries/libMediaPipeTasksCommon_simulator_graph.a
 # AVIDDA/*.task
