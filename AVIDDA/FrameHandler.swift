@@ -28,9 +28,6 @@ class FrameHandler: NSObject, ObservableObject {
     private let framesPerVideo = 240
     private var isProcessing = false
     
-    // prediction
-    private var isDrowsy = false
-    
     // alarm
     @Published var showAlert = false
     @Published var isAlertActive = false
@@ -131,12 +128,14 @@ class FrameHandler: NSObject, ObservableObject {
 
         let drowsinessDetector = DrowsinessDetector()
         let isDrowsy = drowsinessDetector.predict(frames: frames)
-        if isDrowsy! {
-            triggerDrowsinessAlert()
+        if let drowsy = isDrowsy {
+            triggerDrowsinessAlert(with: drowsy)
+        } else {
+            print("Prediction returned nil")
         }
     }
     
-    func triggerDrowsinessAlert() {
+    func triggerDrowsinessAlert(with isDrowsy: Bool) {
         guard isDrowsy else { return }
         isAlertActive = true
         
