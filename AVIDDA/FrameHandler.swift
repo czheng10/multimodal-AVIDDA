@@ -132,7 +132,7 @@ class FrameHandler: NSObject, ObservableObject {
         let drowsinessDetector = DrowsinessDetector()
         let isDrowsy = drowsinessDetector.predict(frames: frames)
         if isDrowsy! {
-            g()
+            triggerDrowsinessAlert()
         }
     }
     
@@ -403,14 +403,19 @@ class DrowsinessDetector {
     }
 
     struct AdaBoostModel: Codable {
-        let trees: [DecisionTree]
+      let weights: [Double]
+      let trees: [DecisionTree]
     }
 
     class AdaBoostClassifier {
         private let trees: [DecisionTree]
-        private init(trees: [DecisionTree]) {
+        private let weights: [Double]
+        
+        private init(trees: [DecisionTree], weights: [Double]) {
             self.trees = trees
+            self.weights = weights
         }
+        
         convenience init(modelName: String) throws {
             guard let path = Bundle.main.path(forResource: modelName, ofType: "json") else {
                 throw NSError(domain: "AdaBoostClassifier", code: 1,
@@ -422,53 +427,59 @@ class DrowsinessDetector {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 let model = try decoder.decode(AdaBoostModel.self, from: data)
-                self.init(trees: model.trees)
+                self.init(trees: model.trees, weights: model.weights)
             } catch {
                 print("Decoding failed: \(error)")
                 throw error
             }
         }
         
-        private init(jsonData: Data) throws {
-            let model = try JSONDecoder().decode(AdaBoostModel.self, from: jsonData)
-            self.trees = model.trees
-        }
-        
-        
-        func predictProbability(features: [Double]) -> Double {
-            var sum: Double = 0.0
-            
-            for tree in trees {
-                sum += predictSingleTree(tree: tree, features: features)
-            }
-            
-            // AdaBoost produces a weighted sum that we need to convert to probability
-            let probability = 1.0 / (1.0 + exp(-sum))
-            return probability
-        }
-        
-        private func predictSingleTree(tree: DecisionTree, features: [Double]) -> Double {
+        private func safePredictSingleTree(tree: DecisionTree, features: [Double]) -> Double {
             var node = 0
+            var depth = 0
+            let maxDepth = 100 // Prevent infinite loops
             
-            while true {
+            while depth < maxDepth {
                 let leftChild = tree.childrenLeft[node]
                 let rightChild = tree.childrenRight[node]
                 
-                // If it's a leaf node
+                // Leaf node
                 if leftChild == -1 && rightChild == -1 {
-                    // Return the positive class value (assuming binary classification)
-                    return tree.value[node][1]
+                    let values = tree.value[node]
+                    guard values.count >= 2 else { return 0.5 }
+                    let total = values[0] + values[1]
+                    return total > 0 ? values[1]/total : 0.5
                 }
                 
+                // Safety checks
+                guard node >= 0 && node < tree.feature.count else { break }
                 let featureIndex = tree.feature[node]
-                let threshold = tree.threshold[node]
+                guard featureIndex >= 0 && featureIndex < features.count else { break }
                 
-                if features[featureIndex] <= threshold {
-                    node = leftChild
-                } else {
-                    node = rightChild
-                }
+                let threshold = tree.threshold[node]
+                node = features[featureIndex] <= threshold ? leftChild : rightChild
+                depth += 1
             }
+            return 0.5 // Default neutral prediction
+        }
+        
+        func predictProbability(features: [Double]) -> Double {
+            guard !trees.isEmpty, trees.count == weights.count else {
+                return 0.5
+            }
+            
+            // Calculate weighted sum of tree predictions
+            let weightedSum = zip(trees, weights).reduce(0.0) {
+                let treePrediction = safePredictSingleTree(tree: $1.0, features: features)
+                return $0 + ($1.1 * treePrediction)
+            }
+            
+            // Normalize by sum of weights
+            let sumWeights = weights.reduce(0, +)
+            let normalizedSum = sumWeights > 0 ? weightedSum/sumWeights : weightedSum
+            
+            // Apply sigmoid with offset
+            return 1.0 / (1.0 + exp(-(normalizedSum)))
         }
     }
 
@@ -530,7 +541,6 @@ class DrowsinessDetector {
             
             let predProb = sigmoid(weightedPrediction)
             let pred = predProb > threshold
-            print(predProb)
             return pred
         } catch {
             print("Prediction error: \(error)")
