@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		590BCD44635223FBC4E6EF42 /* Pods_AVIDDA.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9AD7A42951D4559E5E1CE64 /* Pods_AVIDDA.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		29EEA94F2DC056A900448CB8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,10 +28,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2998FF5E2DC6A640003C4D26 /* entitlements.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = entitlements.entitlements; sourceTree = "<group>"; };
+		07439E7505B33454B4DF9D8A /* Pods-AVIDDA.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AVIDDA.release.xcconfig"; path = "Target Support Files/Pods-AVIDDA/Pods-AVIDDA.release.xcconfig"; sourceTree = "<group>"; };
 		29EEA9412DC056A800448CB8 /* AVIDDA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AVIDDA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29EEA94E2DC056A900448CB8 /* AVIDDATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AVIDDATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		29EEA9582DC056A900448CB8 /* AVIDDAUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AVIDDAUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C170E999156E7EEF4F097A30 /* Pods-AVIDDA.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AVIDDA.debug.xcconfig"; path = "Target Support Files/Pods-AVIDDA/Pods-AVIDDA.debug.xcconfig"; sourceTree = "<group>"; };
+		F9AD7A42951D4559E5E1CE64 /* Pods_AVIDDA.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AVIDDA.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -66,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				590BCD44635223FBC4E6EF42 /* Pods_AVIDDA.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,11 +96,12 @@
 		29EEA9382DC056A800448CB8 = {
 			isa = PBXGroup;
 			children = (
-				2998FF5E2DC6A640003C4D26 /* entitlements.entitlements */,
 				29EEA9432DC056A800448CB8 /* AVIDDA */,
 				29EEA9512DC056A900448CB8 /* AVIDDATests */,
 				29EEA95B2DC056A900448CB8 /* AVIDDAUITests */,
 				29EEA9422DC056A800448CB8 /* Products */,
+				E065D1B840A5962CB94B0286 /* Frameworks */,
+				3CC3898E2015E7144B381BF1 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -107,6 +115,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		3CC3898E2015E7144B381BF1 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C170E999156E7EEF4F097A30 /* Pods-AVIDDA.debug.xcconfig */,
+				07439E7505B33454B4DF9D8A /* Pods-AVIDDA.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		E065D1B840A5962CB94B0286 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F9AD7A42951D4559E5E1CE64 /* Pods_AVIDDA.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -114,6 +139,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 29EEA9622DC056A900448CB8 /* Build configuration list for PBXNativeTarget "AVIDDA" */;
 			buildPhases = (
+				2FE15012A06C2C49BFC0E1D6 /* [CP] Check Pods Manifest.lock */,
 				29EEA93D2DC056A800448CB8 /* Sources */,
 				29EEA93E2DC056A800448CB8 /* Frameworks */,
 				29EEA93F2DC056A800448CB8 /* Resources */,
@@ -126,8 +152,6 @@
 				29EEA9432DC056A800448CB8 /* AVIDDA */,
 			);
 			name = AVIDDA;
-			packageProductDependencies = (
-			);
 			productName = AVIDDA;
 			productReference = 29EEA9412DC056A800448CB8 /* AVIDDA.app */;
 			productType = "com.apple.product-type.application";
@@ -149,8 +173,6 @@
 				29EEA9512DC056A900448CB8 /* AVIDDATests */,
 			);
 			name = AVIDDATests;
-			packageProductDependencies = (
-			);
 			productName = AVIDDATests;
 			productReference = 29EEA94E2DC056A900448CB8 /* AVIDDATests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -172,8 +194,6 @@
 				29EEA95B2DC056A900448CB8 /* AVIDDAUITests */,
 			);
 			name = AVIDDAUITests;
-			packageProductDependencies = (
-			);
 			productName = AVIDDAUITests;
 			productReference = 29EEA9582DC056A900448CB8 /* AVIDDAUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -245,6 +265,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		2FE15012A06C2C49BFC0E1D6 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-AVIDDA-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		29EEA93D2DC056A800448CB8 /* Sources */ = {
@@ -407,10 +452,10 @@
 		};
 		29EEA9632DC056A900448CB8 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C170E999156E7EEF4F097A30 /* Pods-AVIDDA.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AVIDDA/AVIDDA.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MTZTN863MN;
@@ -439,10 +484,10 @@
 		};
 		29EEA9642DC056A900448CB8 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 07439E7505B33454B4DF9D8A /* Pods-AVIDDA.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AVIDDA/AVIDDA.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MTZTN863MN;

@@ -8,6 +8,9 @@
 import AVFoundation
 import CoreImage
 import AudioToolbox
+import UIKit
+import MediaPipeTasksVision
+import Foundation
 
 class FrameHandler: NSObject, ObservableObject {
     // video recording
@@ -229,3 +232,291 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
         return cgImage
     }
 }
+
+
+
+
+class ViewController: UIViewController {
+    @Published var eyeIndices: Set<Int> = [384, 385, 386, 387, 388, 133, 390, 263, 7, 398, 144, 145, 153, 154, 155, 157, 158, 159, 160, 33, 161, 163, 173, 466, 469, 470, 471, 472, 474, 475, 476, 477, 362, 373, 374, 246, 249, 380, 381, 382]
+    @Published var poseIndices: Set<Int> = [0, 7, 8, 9, 10, 11, 12]
+    @Published var faceLandmarker: FaceLandmarker?
+    @Published var poseLandmarker: PoseLandmarker?
+    var weights: [Double] = [1.87858007, 3.86422247, 3.73796147]
+    var offset: Double =  -4.839405413695547
+    var threshold: Double = 0.59
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupFaceLandmarker()
+        setupPoseLandmarker()
+    }
+    
+    func convertCGImagesToMPImages(frames: [CGImage]) -> [MPImage] {
+        var mpImages: [MPImage] = []
+
+        for cg in frames {
+            let uiImage = UIImage(cgImage: cg)
+            do {
+                let mpImage = try MPImage(uiImage: uiImage)  // Use .image: UIImage initializer
+                mpImages.append(mpImage)
+            } catch {
+                print("Failed to convert frame to MPImage: \(error)")
+            }
+        }
+
+        return mpImages
+    }
+
+    func setupFaceLandmarker() {
+        guard let modelPath = Bundle.main.path(forResource: "face_landmarker", ofType: "task") else {
+            print("Model file not found")
+            return
+        }
+
+        var options = FaceLandmarkerOptions()
+        options.baseOptions.modelAssetPath = modelPath
+        options.runningMode = .image
+        options.numFaces = 1
+
+        do {
+            faceLandmarker = try FaceLandmarker(options: options)
+        } catch {
+            print("Failed to initialize FaceLandmarker: \(error)")
+        }
+    }
+    
+    func setupPoseLandmarker() {
+        guard let modelPath = Bundle.main.path(forResource: "pose_landmarker", ofType: "task") else {
+            print("Pose model not found")
+            return
+        }
+
+        var options = PoseLandmarkerOptions()
+        options.baseOptions.modelAssetPath = modelPath
+        options.runningMode = .image
+
+        do {
+            poseLandmarker = try PoseLandmarker(options: options)
+        } catch {
+            print("Failed to initialize pose detector: \(error)")
+        }
+    }
+
+    func extractEyeAndHeadFeatures(from result: FaceLandmarkerResult, eyeIndices: Set<Int>) -> (eye: [[Float]], head: [[Float]]) {
+        guard let face = result.faceLandmarks.first else { return ([], []) }
+
+        var eyeFeatures = [[Float]]()
+        var headFeatures = [[Float]]()
+
+        for (index, point) in face.enumerated() {
+            let coords: [Float] = [point.x, point.y, point.z]
+
+            if eyeIndices.contains(index) {
+                eyeFeatures.append(coords)
+            } else {
+                headFeatures.append(coords)
+            }
+        }
+
+        return (eye: eyeFeatures, head: headFeatures)
+    }
+    
+    func extractPoseFeatures(from result: PoseLandmarkerResult, poseIndices: Set<Int>) -> ([[Float]]) {
+        guard let pose = result.landmarks.first else { return ([]) }
+
+        var poseFeatures = [[Float]]()
+
+        for (index, point) in pose.enumerated() {
+            let coords: [Float] = [point.x, point.y, point.z]
+
+            if poseIndices.contains(index) {
+                poseFeatures.append(coords)
+            }
+        }
+
+        return (poseFeatures)
+    }
+    
+    func extractFeatures(
+        frames: [CGImage],
+        faceLandmarker: FaceLandmarker,
+        poseLandmarker: PoseLandmarker,
+        eyeIndices: Set<Int>,
+        poseIndices: Set<Int>) -> (eye: [[[Float]]], head: [[[Float]]], pose: [[[Float]]]) {
+            
+            var eyeFeatures = [[[Float]]]()
+            var headFeatures = [[[Float]]]()
+            var poseFeatures = [[[Float]]]()
+            var MPImageFrames = convertCGImagesToMPImages(frames: frames)
+        
+            for mpImage in MPImageFrames{
+                do {
+                    let faceResult = try faceLandmarker.detect(image: mpImage)
+                    let poseResult = try poseLandmarker.detect(image: mpImage)
+
+                    let (eye, head) = extractEyeAndHeadFeatures(from: faceResult, eyeIndices: eyeIndices)
+                    let pose = extractPoseFeatures(from: poseResult, poseIndices: poseIndices)
+
+                    eyeFeatures.append(eye)
+                    headFeatures.append(head)
+                    poseFeatures.append(pose)
+                } catch {
+                    print("Pose or face detection failed on one of the frames: \(error)")
+                }
+        }
+
+            return (eye: eyeFeatures, head: headFeatures, pose: poseFeatures)
+    }
+    
+
+    func prepareData(input: [[[Float]]], featureCount: Int) -> [Float] {
+        // 2D padding for one frame: featureCount rows of [0.0, 0.0, 0.0]
+        let padding = Array(repeating: Array(repeating: Float(0), count: 3), count: featureCount)
+
+        var paddedSample: [[[Float]]] = []
+
+        for frame in input {
+            if frame.isEmpty {
+                paddedSample.append(padding)
+            } else {
+                paddedSample.append(frame)
+            }
+        }
+
+        let flattened = paddedSample.flatMap { $0 }.flatMap { $0 }
+        return flattened
+    }
+
+    struct DecisionTree: Codable {
+        let childrenLeft: [Int]
+        let childrenRight: [Int]
+        let feature: [Int]
+        let threshold: [Double]
+        let value: [[Double]]
+    }
+
+    struct AdaBoostModel: Codable {
+        let trees: [DecisionTree]
+    }
+
+    class AdaBoostClassifier {
+        private let trees: [DecisionTree]
+
+        convenience init(modelName: String) throws {
+            guard let path = Bundle.main.path(forResource: modelName, ofType: "json") else {
+                throw NSError(domain: "AdaBoostClassifier", code: 1,
+                             userInfo: [NSLocalizedDescriptionKey: "Model file not found"])
+            }
+            
+            let url = URL(fileURLWithPath: path)
+            let data = try Data(contentsOf: url)
+            try self.init(jsonData: data)
+        }
+        
+        private init(jsonData: Data) throws {
+            let model = try JSONDecoder().decode(AdaBoostModel.self, from: jsonData)
+            self.trees = model.trees
+        }
+        
+        func predictProbability(features: [Double]) -> Double {
+            var sum: Double = 0.0
+            
+            for tree in trees {
+                sum += predictSingleTree(tree: tree, features: features)
+            }
+            
+            // AdaBoost produces a weighted sum that we need to convert to probability
+            let probability = 1.0 / (1.0 + exp(-sum))
+            return probability
+        }
+        
+        private func predictSingleTree(tree: DecisionTree, features: [Double]) -> Double {
+            var node = 0
+            
+            while true {
+                let leftChild = tree.childrenLeft[node]
+                let rightChild = tree.childrenRight[node]
+                
+                // If it's a leaf node
+                if leftChild == -1 && rightChild == -1 {
+                    // Return the positive class value (assuming binary classification)
+                    return tree.value[node][1]
+                }
+                
+                let featureIndex = tree.feature[node]
+                let threshold = tree.threshold[node]
+                
+                if features[featureIndex] <= threshold {
+                    node = leftChild
+                } else {
+                    node = rightChild
+                }
+            }
+        }
+    }
+
+    func sigmoid(_ x: Double) -> Double {
+        return 1.0 / (1.0 + exp(-x))
+    }
+    
+    func predict(frames: [CGImage]) -> Bool? {
+        guard let faceLandmarker = faceLandmarker, let poseLandmarker = poseLandmarker else {
+            print("Landmarkers not initialized")
+            return nil
+        }
+        
+        // Initialize models
+        guard let eyeModel = try? AdaBoostClassifier(modelName: "eye_model"),
+              let headModel = try? AdaBoostClassifier(modelName: "head_model"),
+              let poseModel = try? AdaBoostClassifier(modelName: "pose_model") else {
+            print("Failed to initialize one or more models")
+            return nil
+        }
+        
+        // Extract features
+        let (eye, head, pose) = extractFeatures(
+            frames: frames,
+            faceLandmarker: faceLandmarker,
+            poseLandmarker: poseLandmarker,
+            eyeIndices: eyeIndices,
+            poseIndices: poseIndices
+        )
+        
+        // Prepare input data
+        let eyeInput = prepareData(input: eye, featureCount: eyeIndices.count)
+        let headInput = prepareData(input: head, featureCount: 438)
+        let poseInput = prepareData(input: pose, featureCount: poseIndices.count)
+        
+        // Convert to Double
+        let doubleEye = eyeInput.map { Double($0) }
+        let doubleHead = headInput.map { Double($0) }
+        let doublePose = poseInput.map { Double($0) }
+        
+        do {
+            // Make predictions
+            let eyePred = try eyeModel.predictProbability(features: doubleEye)
+            let headPred = try headModel.predictProbability(features: doubleHead)
+            let posePred = try poseModel.predictProbability(features: doublePose)
+            let preds: [Double] = [eyePred, headPred, posePred]
+            
+            let result = zip(preds, weights).map(*)
+            let sum = result.reduce(0, +)
+            let weightedPrediction:Double = sum + offset
+            
+            let predProb = sigmoid(weightedPrediction)
+            let pred = predProb > threshold
+            
+            return pred
+        } catch {
+            print("Prediction error: \(error)")
+            return nil
+        }
+    }
+    
+    
+}
+
+
+
+
+
