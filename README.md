@@ -1,6 +1,27 @@
 # AVIDDA: Accessible Video-based Interface for Driver Drowsiness Alerts
 
 ## Table of Contents
+All of our code can be found under the "AVIDDA/" subdirectory, so we will go over this in detail:
+- AVIDDA/
+    - `Assets.xcassets/` - subdirectory holding asset files such as app logo and app icon design
+    - `AVIDDAApp.swift` - main entry point of our application
+    - `ContentView.swift` - main UI page of our application, where the map, camera recording, and alerts will be displayed
+    - `FrameHandler.swift` - backend logic for video frame collection and processing, feature extraction, drowsiness prediction, and alert triggering.
+    - `FrameView.swift` - frontend logic on how the live camera recording will look on our UI
+    - `Info.plist` - configuration file for app settings
+    - `map.gif` - GIF asset for mocking navigation journey on our main UI page
+    - `alarm.caf` - audio file asset for auditory alert
+    - `AlertView.swift` - frontend logic for displaying the visual drowsiness alert
+    - `AVIDDA.entitlements`- configuration file for advance permissions
+    - `OpeningView.swift` - frontend logic for presenting instructions on the introductory pages of our UI
+
+Other files/subdirectories that appear in this repository are:
+- AVIDDA.xcodeproj - organizational information package for Xcode
+- AVIDDATests/ - subdirectory for testing logic
+- AVIDDAUITests/ - subdirectory for UI testing logic
+- entitlements.entitlements - configuration file for advance permissions
+
+
 
 ## Setup Instructions
 ### Needed Infrastructure
@@ -26,3 +47,5 @@ You are now ready to build and run AVIDDA.
 4. Give permission to AVIDDA to use your camera.
 
 You are now ready to begin recording.
+
+<b> 6.8510: Last updated by Cindy Zheng, Margaret Yu 05/25</b>
