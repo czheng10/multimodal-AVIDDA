@@ -1,0 +1,23 @@
+# Keep these JSON model files
+!AVIDDA/eye_model.json
+!AVIDDA/head_model.json
+!AVIDDA/pose_model.json
+
+# Ignore the large MediaPipe binaries
+Pods/MediaPipeTasksCommon/frameworks/graph_libraries/libMediaPipeTasksCommon_simulator_graph.a
+AVIDDA/*.task
+
+# Xcode files to ignore
+**/xcuserdata/
+*.xcuserstate
+build/
+DerivedData/
+*.xcworkspace/
+
+# CocoaPods (ignore Pods directory but keep config files)
+Pods/
+!Podfile
+!Podfile.lock
+
+# System files
+.DS_Store
