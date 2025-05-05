@@ -1,7 +1,7 @@
 # AVIDDA: Accessible Video-based Interface for Driver Drowsiness Alerts
 
 ## Table of Contents
-All of our code can be found under the "AVIDDA/" subdirectory, so we will go over this in detail:
+The majority of our code for our app can be found under the "AVIDDA/" subdirectory or in IPYNB files, so we will go over this in detail:
 - AVIDDA/
     - `Assets.xcassets/` - subdirectory holding asset files such as app logo and app icon design
     - `AVIDDAApp.swift` - main entry point of our application
@@ -14,6 +14,7 @@ All of our code can be found under the "AVIDDA/" subdirectory, so we will go ove
     - `AlertView.swift` - frontend logic for displaying the visual drowsiness alert
     - `AVIDDA.entitlements`- configuration file for advance permissions
     - `OpeningView.swift` - frontend logic for presenting instructions on the introductory pages of our UI
+- `68510FinalProject.ipynb` - Google Colab/Jupyter Notebook outlining our processes for model training and testing, threshold determination, and evaluation
 
 Other files/subdirectories that appear in this repository are:
 - AVIDDA.xcodeproj - organizational information package for Xcode
