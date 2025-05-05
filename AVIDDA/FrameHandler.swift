@@ -131,7 +131,7 @@ class FrameHandler: NSObject, ObservableObject {
 
         let drowsinessDetector = ViewController()
         let isDrowsy = drowsinessDetector.predict(frames: frames)
-        if isDrowsy {
+        if isDrowsy! {
             triggerDrowsinessAlert()
         }
     }
