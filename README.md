@@ -38,6 +38,10 @@ Our application requires connecting an iPhone (12 or higher) to your MacOS lapto
 7. Select AVIDDA under Targets, and then the "Signing & Capabilities" tab
 8. Click "+ Capability", search for "Background Modes" and add it
 9. Check "Audio, AirPlay, and Picture in Picture" and "Background processing".
+10. Install HomeBrew with '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+11. Install Ruby with 'brew install rbenv', 'rbenv init', and then 'rbenv install 3.4.3'
+12. Install CocoaPods with 'gem install cocoapods'
+13. Navigate to the directory containing the AVIDDA XPRoj file and run 'pod install'
 
 You are now ready to build and run AVIDDA.
 
