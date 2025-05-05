@@ -47,6 +47,7 @@ struct ContentView: View {
     @StateObject private var model = FrameHandler()
     @State private var showGIFError = false
     @State private var blink = 0.6
+    @State private var showProcessing = false
     
     var body: some View {
         ZStack {
@@ -135,6 +136,22 @@ struct ContentView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
+                .disabled(model.showProcessing)
+            }
+            
+            if model.showProcessing {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.01))
+                    .overlay(
+                        ProgressView()
+                            .scaleEffect(2.0)
+                            .background(Color.gray.opacity(0.4))
+                            .cornerRadius(15)
+                            .padding(.leading, 220)
+                            .padding(.top, 100)
+                    )
             }
         }
     }

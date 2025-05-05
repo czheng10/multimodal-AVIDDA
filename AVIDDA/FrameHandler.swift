@@ -22,6 +22,7 @@ class FrameHandler: NSObject, ObservableObject {
     private let context = CIContext()
     
     // frame processing
+    @Published var showProcessing = false
     private var collectedFrames: [CGImage] = []
     private var lastFrameTime: CMTime = .zero
     private let targetFrameInterval = CMTime(value: 1, timescale: 24) // 24 fps
@@ -122,16 +123,26 @@ class FrameHandler: NSObject, ObservableObject {
         // Given frame collection, extract features from each and predict
         print("Making prediction with \(frames.count) frames")
         
-        DispatchQueue.main.async {
-            completion()
+        DispatchQueue.main.async { [weak self] in
+            self?.showProcessing = true
         }
-
-        let drowsinessDetector = DrowsinessDetector()
-        let isDrowsy = drowsinessDetector.predict(frames: frames)
-        if let drowsy = isDrowsy {
-            triggerDrowsinessAlert(with: drowsy)
-        } else {
-            print("Prediction returned nil")
+        
+        // predictor in the background 
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            
+            let drowsinessDetector = DrowsinessDetector()
+            let isDrowsy = drowsinessDetector.predict(frames: frames)
+            
+            // main thread
+            DispatchQueue.main.async {
+                if let drowsy = isDrowsy {
+                    self.triggerDrowsinessAlert(with: drowsy)
+                }
+                
+                self.showProcessing = false
+                completion()
+            }
         }
     }
     
