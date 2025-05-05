@@ -26,22 +26,27 @@ Other files/subdirectories that appear in this repository are:
 
 ## Setup Instructions
 ### Needed Infrastructure
-Our application requires connecting an iPhone (12 or higher) to your MacOS laptop. Xcode must be installed on the laptop.
+#### Hardware
+Our application requires connecting an iPhone (12 or higher) to your MacOS laptop. 
+
+### Software 
+1. Please download Xcode onto your MacOS laptop from the Appstore.
+2. Install HomeBrew with `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+3. Install Ruby with `brew install rbenv`, `rbenv init`, and then `rbenv install 3.4.3`. Note that you may need to change the PATH in `.zshrc` to use Ruby 3.4.3 rather than Apple's built-in version.
+4. Install CocoaPods with `gem install cocoapods`
+5. Navigate to the directory containing the AVIDDA XPRoj file and run `pod install`
 
 ### Setup Instructions
-1. Install Xcode with Swift onto your MacOS.
+1. Turn on Developer Mode on your iPhone: <b>Settings > Privacy & Security > Developer Mode</b>. This may cause your iPhone to restart.
 2. Clone this project onto your MacOs: `git clone https://github.com/czheng10/multimodal-AVIDDA.git`
 3. Connect your iPhone to your MacOS.
 4. Agree to "Trust this Computer" after connecting your iPhone to your MacOS.
 5. Change directory into your cloned project folder and open up this project on Xcode.
 6. Select this project's outermost file (`AVIDDA.xcodeproj`) in the Project Navigator
-7. Select AVIDDA under Targets, and then the "Signing & Capabilities" tab
-8. Click "+ Capability", search for "Background Modes" and add it
-9. Check "Audio, AirPlay, and Picture in Picture" and "Background processing".
-10. Install HomeBrew with '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-11. Install Ruby with 'brew install rbenv', 'rbenv init', and then 'rbenv install 3.4.3'
-12. Install CocoaPods with 'gem install cocoapods'
-13. Navigate to the directory containing the AVIDDA XPRoj file and run 'pod install'
+7. Select AVIDDA under Targets, and then the "Signing & Capabilities" tab.
+8. Under "Signings", add your Apple account in "Team".
+9. Also modify the Bundle Identifier to create one unique to you. We recommend the format `com.<yourname>.AVIDDA`.
+10. On your iPhone, navigate to <b>Settings > General > VPN & Device Management</b> and trust your developer app. 
 
 You are now ready to build and run AVIDDA.
 
