@@ -129,7 +129,7 @@ class FrameHandler: NSObject, ObservableObject {
             completion()
         }
 
-        let drowsinessDetector = ViewController()
+        let drowsinessDetector = DrowsinessDetector()
         let isDrowsy = drowsinessDetector.predict(frames: frames)
         if isDrowsy! {
             triggerDrowsinessAlert()
@@ -236,7 +236,7 @@ extension FrameHandler: AVCaptureVideoDataOutputSampleBufferDelegate {
 
 
 
-class ViewController: UIViewController {
+class DrowsinessDetector {
     @Published var eyeIndices: Set<Int> = [384, 385, 386, 387, 388, 133, 390, 263, 7, 398, 144, 145, 153, 154, 155, 157, 158, 159, 160, 33, 161, 163, 173, 466, 469, 470, 471, 472, 474, 475, 476, 477, 362, 373, 374, 246, 249, 380, 381, 382]
     @Published var poseIndices: Set<Int> = [0, 7, 8, 9, 10, 11, 12]
     @Published var faceLandmarker: FaceLandmarker?
@@ -244,11 +244,18 @@ class ViewController: UIViewController {
     var weights: [Double] = [1.87858007, 3.86422247, 3.73796147]
     var offset: Double =  -4.839405413695547
     var threshold: Double = 0.59
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    init() {
+        let facePath = Bundle.main.path(forResource: "face_landmarker", ofType: "task")
+        let posePath = Bundle.main.path(forResource: "pose_landmarker_lite", ofType: "task")
+        print("Face model exists:", facePath != nil)
+        print("Pose model exists:", posePath != nil)
+        
         setupFaceLandmarker()
         setupPoseLandmarker()
+        
+        // Debug: Verify initialization
+        print("FaceLandmarker initialized:", faceLandmarker != nil)
+        print("PoseLandmarker initialized:", poseLandmarker != nil)
     }
     
     func convertCGImagesToMPImages(frames: [CGImage]) -> [MPImage] {
@@ -273,7 +280,7 @@ class ViewController: UIViewController {
             return
         }
 
-        var options = FaceLandmarkerOptions()
+        let options = FaceLandmarkerOptions()
         options.baseOptions.modelAssetPath = modelPath
         options.runningMode = .image
         options.numFaces = 1
@@ -286,12 +293,12 @@ class ViewController: UIViewController {
     }
     
     func setupPoseLandmarker() {
-        guard let modelPath = Bundle.main.path(forResource: "pose_landmarker", ofType: "task") else {
+        guard let modelPath = Bundle.main.path(forResource: "pose_landmarker_lite", ofType: "task") else {
             print("Pose model not found")
             return
         }
 
-        var options = PoseLandmarkerOptions()
+        let options = PoseLandmarkerOptions()
         options.baseOptions.modelAssetPath = modelPath
         options.runningMode = .image
 
@@ -347,7 +354,7 @@ class ViewController: UIViewController {
             var eyeFeatures = [[[Float]]]()
             var headFeatures = [[[Float]]]()
             var poseFeatures = [[[Float]]]()
-            var MPImageFrames = convertCGImagesToMPImages(frames: frames)
+            let MPImageFrames = convertCGImagesToMPImages(frames: frames)
         
             for mpImage in MPImageFrames{
                 do {
@@ -401,22 +408,32 @@ class ViewController: UIViewController {
 
     class AdaBoostClassifier {
         private let trees: [DecisionTree]
-
+        private init(trees: [DecisionTree]) {
+            self.trees = trees
+        }
         convenience init(modelName: String) throws {
             guard let path = Bundle.main.path(forResource: modelName, ofType: "json") else {
                 throw NSError(domain: "AdaBoostClassifier", code: 1,
-                             userInfo: [NSLocalizedDescriptionKey: "Model file not found"])
+                             userInfo: [NSLocalizedDescriptionKey: "File \(modelName).json not found"])
             }
             
-            let url = URL(fileURLWithPath: path)
-            let data = try Data(contentsOf: url)
-            try self.init(jsonData: data)
+            do {
+                let data = try Data(contentsOf: URL(fileURLWithPath: path))
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let model = try decoder.decode(AdaBoostModel.self, from: data)
+                self.init(trees: model.trees)
+            } catch {
+                print("Decoding failed: \(error)")
+                throw error
+            }
         }
         
         private init(jsonData: Data) throws {
             let model = try JSONDecoder().decode(AdaBoostModel.self, from: jsonData)
             self.trees = model.trees
         }
+        
         
         func predictProbability(features: [Double]) -> Double {
             var sum: Double = 0.0
@@ -466,6 +483,14 @@ class ViewController: UIViewController {
         }
         
         // Initialize models
+        let modelNames = ["eye_model", "head_model", "pose_model"]
+        for name in modelNames {
+            if Bundle.main.path(forResource: name, ofType: "json") != nil {
+                print("Found: \(name).json")
+            } else {
+                print("Missing: \(name).json")
+            }
+        }
         guard let eyeModel = try? AdaBoostClassifier(modelName: "eye_model"),
               let headModel = try? AdaBoostClassifier(modelName: "head_model"),
               let poseModel = try? AdaBoostClassifier(modelName: "pose_model") else {
@@ -498,14 +523,14 @@ class ViewController: UIViewController {
             let headPred = try headModel.predictProbability(features: doubleHead)
             let posePred = try poseModel.predictProbability(features: doublePose)
             let preds: [Double] = [eyePred, headPred, posePred]
-            
+            print(preds)
             let result = zip(preds, weights).map(*)
             let sum = result.reduce(0, +)
             let weightedPrediction:Double = sum + offset
             
             let predProb = sigmoid(weightedPrediction)
             let pred = predProb > threshold
-            
+            print(predProb)
             return pred
         } catch {
             print("Prediction error: \(error)")
