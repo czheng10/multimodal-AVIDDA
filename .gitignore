@@ -5,7 +5,7 @@
 
 # Ignore the large MediaPipe binaries
 Pods/MediaPipeTasksCommon/frameworks/graph_libraries/libMediaPipeTasksCommon_simulator_graph.a
-AVIDDA/*.task
+# AVIDDA/*.task
 
 # Xcode files to ignore
 **/xcuserdata/
