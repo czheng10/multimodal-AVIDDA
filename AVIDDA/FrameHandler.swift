@@ -132,7 +132,7 @@ class FrameHandler: NSObject, ObservableObject {
         let drowsinessDetector = DrowsinessDetector()
         let isDrowsy = drowsinessDetector.predict(frames: frames)
         if isDrowsy! {
-            triggerDrowsinessAlert()
+            g()
         }
     }
     
