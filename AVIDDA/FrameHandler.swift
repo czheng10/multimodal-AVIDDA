@@ -149,10 +149,9 @@ class FrameHandler: NSObject, ObservableObject {
             print("Audio session error: \(error)")
         }
         
-        // Bypass silent mode than play alarm
+        // Bypass silent mode to play alarm
         AudioServicesPlaySystemSoundWithCompletion(criticalSoundID) {
-            //2 second gap
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            DispatchQueue.main.asyncAfter(deadline: .now()) {
                 self.setupAndPlayAlarm()
             }
         }
