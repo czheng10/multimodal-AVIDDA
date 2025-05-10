@@ -15,7 +15,7 @@ The majority of our code for our app can be found under the "AVIDDA/" subdirecto
     - `AVIDDA.entitlements`- configuration file for advance permissions
     - `OpeningView.swift` - frontend logic for presenting instructions on the introductory pages of our UI
 - `68510FinalProject.ipynb` - Google Colab/Jupyter Notebook outlining our processes for model training and testing, threshold determination, and evaluation
-- `68510FinalProject_appcode.ipynb` - Google Colab/Jupyter Notebook containing the cleaned version of our detection model, implemented in Python and ready for use. 
+- `68510FinalProject_appcode.ipynb` - Google Colab/Jupyter Notebook containing the cleaned version of our detection model, implemented in Python and ready for use. <i>Note: If mediapipe fails to install, simply restart the runtime and try again.</i>
 
 Other files/subdirectories that appear in this repository are:
 - AVIDDA.xcodeproj - organizational information package for Xcode
