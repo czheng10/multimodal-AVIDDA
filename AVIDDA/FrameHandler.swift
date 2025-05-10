@@ -253,7 +253,7 @@ class DrowsinessDetector {
     @Published var poseLandmarker: PoseLandmarker?
     var weights: [Double] = [1.87858007, 3.86422247, 3.73796147]
     var offset: Double =  -4.839405413695547
-    var threshold: Double = 0.59
+    var threshold: Double = 0.63
     init() {
         let facePath = Bundle.main.path(forResource: "face_landmarker", ofType: "task")
         let posePath = Bundle.main.path(forResource: "pose_landmarker_lite", ofType: "task")
