@@ -15,6 +15,7 @@ The majority of our code for our app can be found under the "AVIDDA/" subdirecto
     - `AVIDDA.entitlements`- configuration file for advance permissions
     - `OpeningView.swift` - frontend logic for presenting instructions on the introductory pages of our UI
 - `68510FinalProject.ipynb` - Google Colab/Jupyter Notebook outlining our processes for model training and testing, threshold determination, and evaluation
+- `68510FinalProject_appcode.ipynb` - Google Colab/Jupyter Notebook containing the cleaned version of our detection model, implemented in Python and ready for use. 
 
 Other files/subdirectories that appear in this repository are:
 - AVIDDA.xcodeproj - organizational information package for Xcode
@@ -22,9 +23,12 @@ Other files/subdirectories that appear in this repository are:
 - AVIDDAUITests/ - subdirectory for UI testing logic
 - entitlements.entitlements - configuration file for advance permissions
 
+## What Files Should I Run?
+The two major components to run as an end-user testing AVIDDA would be the `AVIDDA/` subdirectory and the `68510FinalProject_appcode.ipynb`. Decide which to run as follows:
+- <b>I am interested in AVIDDA's prediction accuracy and speed, and want to see the different model parameters. I can pre-record a 10-second video: </b> You will need to download `68510FinalProject_appcode.ipynb` and upload your 10-second video, then run all cells. No other setup is necessary!
+- <b> I am interested in AVIDDA's user interface, and want to experience the entire user path. I am okay with a longer setup process: </b> You will need to build and run the `AVIDDA/` subdirectory to launch the app. Follow the "Application Setup Instructions" portion of this README to do so.
 
-
-## Setup Instructions
+## Application Setup Instructions
 ### Needed Infrastructure
 #### Hardware
 Our application requires connecting an iPhone (12 or higher) to your MacOS laptop. 
