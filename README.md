@@ -33,7 +33,7 @@ The two major components to run as an end-user testing AVIDDA would be the `AVID
 #### Hardware
 Our application requires connecting an iPhone (12 or higher) to your MacOS laptop. 
 
-### Software 
+#### Software 
 1. Please download Xcode onto your MacOS laptop from the Appstore.
 2. Install HomeBrew with `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 3. Install Ruby with `brew install rbenv`, `rbenv init`, and then `rbenv install 3.4.3`. Note that you may need to change the PATH in `.zshrc` to use Ruby 3.4.3 rather than Apple's built-in version.
